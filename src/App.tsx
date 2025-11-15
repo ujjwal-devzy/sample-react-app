@@ -5,7 +5,8 @@ function App() {
     <div>
       <h1>Hello World</h1>
       <p>This is a paragraph</p>
-      <button>Click me</button>
+      <p>This is another paragraph</p>
+      <button onClick={() => alert("Button clicked")}>Click me</button>
       <input type="text" placeholder="Enter your name" />
       <select>
         <option value="1">Option 1</option>
