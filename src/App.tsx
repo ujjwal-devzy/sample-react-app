@@ -2,6 +2,8 @@ import { useEffect } from "react";
 import "./App.css";
 
 function App() {
+  console.log("App rendered");
+
   useEffect(() => {
     console.log("App mounted");
   }, [banter]);
