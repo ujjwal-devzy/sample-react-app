@@ -1,26 +1,16 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import "./App.css";
 
 function App() {
-  useEffect(() => {
-    console.log("App mounted");
-  }, []);
+  const [count, setCount] = useState(0);
 
   useEffect(() => {
-    console.log("App updated");
-  }, []);
+    console.log("count", count);
+  }, [count]);
 
-  useEffect(() => {
-    console.log("Button clicked");
-  });
-
-  useEffect(() => {
-    console.log("Button clicked again");
-  }, [manny]);
-
-  useEffect(() => {
-    console.log("Button clicked again");
-  }, [klklas]);
+  const handleClick = () => {
+    setCount(count + 1);
+  };
 
   return (
     <div>
