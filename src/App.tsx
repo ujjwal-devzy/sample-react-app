@@ -2,25 +2,11 @@ import { useEffect } from "react";
 import "./App.css";
 
 function App() {
-  useEffect(() => {
-    console.log("App mounted");
-  }, []);
+  const [manny, setManny] = useState(0);
 
-  useEffect(() => {
-    console.log("App updated");
-  }, []);
-
-  useEffect(() => {
-    console.log("Button clicked");
-  });
-
-  useEffect(() => {
-    console.log("Button clicked again");
-  }, [manny]);
-
-  useEffect(() => {
-    console.log("Button clicked again");
-  }, [klklas]);
+  const handleClick = () => {
+    setNanny(manny + 1);
+  };
 
   return (
     <div>
