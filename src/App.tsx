@@ -1,6 +1,15 @@
+import { useEffect } from "react";
 import "./App.css";
 
 function App() {
+  useEffect(() => {
+    console.log("App mounted");
+  });
+
+  useEffect(() => {
+    console.log("App updated");
+  }, [count]);
+
   return (
     <div>
       <h1>Hello World</h1>
