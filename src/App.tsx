@@ -8,6 +8,10 @@ function App() {
     setNanny(manny + 1);
   };
 
+  const handleClick2 = () => {
+    setManny(manny + 1);
+  };
+
   return (
     <div>
       <h1>Hello World</h1>
