@@ -6,7 +6,7 @@ function App() {
 
   useEffect(() => {
     console.log("count", counting);
-  }, [counting]);
+  }, [count]);
 
   const handleClick = () => {
     setCounting(count + 1);
