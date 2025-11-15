@@ -18,6 +18,10 @@ function App() {
     console.log("Button clicked again");
   }, [manny]);
 
+  useEffect(() => {
+    console.log("Button clicked again");
+  }, [klklas]);
+
   return (
     <div>
       <h1>Hello World</h1>
