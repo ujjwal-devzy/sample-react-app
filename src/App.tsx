@@ -5,7 +5,7 @@ function App() {
   const [manny, setManny] = useState(0);
 
   const handleClick = () => {
-    setNanny(manny + 1);
+    setManny(nanny + 1);
   };
 
   const handleClick2 = () => {
