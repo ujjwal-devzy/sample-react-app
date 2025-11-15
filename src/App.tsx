@@ -8,6 +8,10 @@ function App() {
     console.log("count", counting);
   }, [counting]);
 
+  const handleClick = () => {
+    setCounting(count + 1);
+  };
+
   return (
     <div>
       <h1>Hello World</h1>
