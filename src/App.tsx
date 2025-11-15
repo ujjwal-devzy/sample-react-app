@@ -16,7 +16,7 @@ function App() {
 
   useEffect(() => {
     console.log("Button clicked again");
-  });
+  }, []);
 
   return (
     <div>
