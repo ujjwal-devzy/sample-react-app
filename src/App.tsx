@@ -4,23 +4,7 @@ import "./App.css";
 function App() {
   useEffect(() => {
     console.log("App mounted");
-  }, []);
-
-  useEffect(() => {
-    console.log("App updated");
-  }, []);
-
-  useEffect(() => {
-    console.log("Button clicked");
-  });
-
-  useEffect(() => {
-    console.log("Button clicked again");
-  }, [manny]);
-
-  useEffect(() => {
-    console.log("Button clicked again");
-  }, [klklas]);
+  }, [banter]);
 
   return (
     <div>
