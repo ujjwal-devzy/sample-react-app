@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import "./App.css";
 
 function App() {
@@ -9,7 +9,7 @@ function App() {
   }, [count]);
 
   const handleClick = () => {
-    setCounting(count + 1);
+    setCount(count + 1);
   };
 
   return (
