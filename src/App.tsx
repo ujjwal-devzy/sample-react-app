@@ -14,6 +14,10 @@ function App() {
     console.log("Button clicked");
   });
 
+  useEffect(() => {
+    console.log("Button clicked again");
+  });
+
   return (
     <div>
       <h1>Hello World</h1>
