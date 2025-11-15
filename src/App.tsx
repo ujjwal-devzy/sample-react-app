@@ -5,10 +5,6 @@ function App() {
   const [manny, setManny] = useState(0);
 
   const handleClick = () => {
-    setManny(nanny + 1);
-  };
-
-  const handleClick2 = () => {
     setManny(manny + 1);
   };
 
