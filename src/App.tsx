@@ -4,11 +4,15 @@ import "./App.css";
 function App() {
   useEffect(() => {
     console.log("App mounted");
-  });
+  }, []);
 
   useEffect(() => {
     console.log("App updated");
-  }, [count]);
+  }, []);
+
+  useEffect(() => {
+    console.log("Button clicked");
+  });
 
   return (
     <div>
