@@ -9,12 +9,17 @@ function App() {
 
   useEffect(() => {
     console.log("Component mounted");
-  });
+  }, []);
 
   const loadData = async () => {
-    const response = await fetch("https://api.example.com/data");
-    const json = await response.json();
-    setData(json);
+    try {
+      const response = await fetch("https://api.example.com/data");
+      if (!response.ok) throw new Error('Network response was not ok');
+      const json = await response.json();
+      setData(json);
+    } catch (error) {
+      console.error("Failed to load data:", error);
+    }
   };
 
   const displayData = () => {

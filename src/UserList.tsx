@@ -38,8 +38,8 @@ function UserList() {
   };
 
   const renderUsers = () => {
-    return users.map((user, index) => (
-      <div>
+    return users.map((user) => (
+      <div key={user.id}>
         <p>{user.name}</p>
         <p>{user.email}</p>
       </div>
