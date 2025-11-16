@@ -16,16 +16,15 @@ export function TodoList() {
       text: inputValue,
       completed: false,
     };
-    todos.push(newTodo);
-    setTodos(todos);
+    setTodos([...todos, newTodo]);
   };
 
   const toggleTodo = (id: number) => {
-    const todo = todos.find((t) => t.id === id);
-    if (todo) {
-      todo.completed = !todo.completed;
-      setTodos(todos);
-    }
+    setTodos(
+      todos.map((todo) =>
+        todo.id === id ? { ...todo, completed: !todo.completed } : todo
+      )
+    );
   };
 
   const filterCompleted = () => {
@@ -40,9 +39,9 @@ export function TodoList() {
       />
       <button onClick={addTodo}>Add Todo</button>
 
-      <ul>
-        {todos.map((todo, index) => (
-          <li key={index}>
+        <ul>
+          {todos.map((todo) => (
+            <li key={todo.id}>
             <input
               type="checkbox"
               checked={todo.completed}
