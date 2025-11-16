@@ -1,12 +1,49 @@
 import "./App.css";
+import UserList from "./UserList";
+import Calculator from "./Calculator";
+import { useState, useEffect } from "react";
 
 function App() {
+  const [data, setData] = useState(null);
+  const [items, setItems] = useState([1, 2, 3, 4, 5]);
+
+  useEffect(() => {
+    console.log("Component mounted");
+  });
+
+  const loadData = async () => {
+    const response = await fetch("https://api.example.com/data");
+    const json = await response.json();
+    setData(json);
+  };
+
+  const displayData = () => {
+    return data!.toString();
+  };
+
+  const addItem = () => {
+    items.push(6);
+    setItems(items);
+  };
+
+  const renderItems = () => {
+    return items.map((item) => <li>{item}</li>);
+  };
+
   return (
     <div>
       <h1>Hello World</h1>
       <p>This is a paragraph</p>
-      <p>This is another paragraph</p>
+
       <button onClick={() => alert("Button clicked")}>Click me</button>
+      <button onClick={loadData}>Load Data</button>
+      <button onClick={addItem}>Add Item</button>
+
+      {/* Bug 6: Rendering without null check */}
+      <p>Data: {displayData()}</p>
+
+      <ul>{renderItems()}</ul>
+
       <input type="text" placeholder="Enter your name" />
       <select>
         <option value="1">Option 1</option>
@@ -18,6 +55,9 @@ function App() {
         <input type="checkbox" />
         <span>I agree to the terms and conditions</span>
       </label>
+
+      <Calculator />
+      <UserList />
     </div>
   );
 }
