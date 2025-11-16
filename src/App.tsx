@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import "./App.css";
 
 type Todo = {
@@ -14,9 +14,21 @@ const seedTodos: Todo[] = [
   { id: 2, title: "Document findings", completed: true },
 ];
 
+const cloneTodos = (list: Todo[]) => list.map((todo) => ({ ...todo }));
+
+let serverTodos = cloneTodos(seedTodos);
+
 const fakeFetchTodos = () =>
   new Promise<Todo[]>((resolve) => {
-    setTimeout(() => resolve(seedTodos), 400);
+    setTimeout(() => resolve(cloneTodos(serverTodos)), 400);
+  });
+
+const fakePersistTodos = (nextTodos: Todo[]) =>
+  new Promise<Todo[]>((resolve) => {
+    setTimeout(() => {
+      serverTodos = cloneTodos(nextTodos);
+      resolve(cloneTodos(serverTodos));
+    }, 250);
   });
 
 function App() {
@@ -25,13 +37,35 @@ function App() {
   const [filter, setFilter] = useState<Filter>("all");
   const [autoRefresh, setAutoRefresh] = useState(false);
   const creationCount = useRef(0);
+  const isMounted = useRef(true);
   const intervalRef = useRef<number | undefined>(undefined);
+  const latestTodosRef = useRef<Todo[]>([]);
 
   useEffect(() => {
-    fakeFetchTodos().then((data) => {
-      setTodos(data);
-    });
+    latestTodosRef.current = todos;
+  }, [todos]);
+
+  useEffect(() => {
+    return () => {
+      isMounted.current = false;
+    };
   }, []);
+
+  const refreshTodos = useCallback(() => {
+    fakeFetchTodos()
+      .then((data) => {
+        if (isMounted.current) {
+          setTodos(data);
+        }
+      })
+      .catch((error) => {
+        console.error("Failed to fetch todos", error);
+      });
+  }, []);
+
+  useEffect(() => {
+    refreshTodos();
+  }, [refreshTodos]);
 
   useEffect(() => {
     if (!autoRefresh) {
@@ -42,10 +76,10 @@ function App() {
       return;
     }
 
+    refreshTodos();
+
     intervalRef.current = window.setInterval(() => {
-      fakeFetchTodos().then((data) => {
-        setTodos(data);
-      });
+      refreshTodos();
     }, 1000);
 
     return () => {
@@ -54,7 +88,7 @@ function App() {
         intervalRef.current = undefined;
       }
     };
-  }, [autoRefresh]);
+  }, [autoRefresh, refreshTodos]);
 
   const visibleTodos = useMemo(() => {
     if (filter === "done") {
@@ -83,30 +117,47 @@ function App() {
     );
   }, [todos]);
 
-  const handleAddTodo = () => {
-    if (!newTitle.trim()) {
+  const handleAddTodo = async () => {
+    const title = newTitle.trim();
+    if (!title) {
       return;
     }
 
     creationCount.current += 1;
 
-    setTodos((previous) => [
-      ...previous,
+    const nextTodos = [
+      ...latestTodosRef.current,
       {
         id: Date.now(),
-        title: newTitle,
+        title,
         completed: false,
       },
-    ]);
-    setNewTitle("");
+    ];
+
+    try {
+      const persisted = await fakePersistTodos(nextTodos);
+      if (isMounted.current) {
+        setTodos(persisted);
+        setNewTitle("");
+      }
+    } catch (error) {
+      console.error("Failed to add todo", error);
+    }
   };
 
-  const handleToggle = (id: number) => {
-    setTodos((previous) =>
-      previous.map((todo) =>
-        todo.id === id ? { ...todo, completed: !todo.completed } : todo
-      )
+  const handleToggle = async (id: number) => {
+    const nextTodos = latestTodosRef.current.map((todo) =>
+      todo.id === id ? { ...todo, completed: !todo.completed } : todo
     );
+
+    try {
+      const persisted = await fakePersistTodos(nextTodos);
+      if (isMounted.current) {
+        setTodos(persisted);
+      }
+    } catch (error) {
+      console.error("Failed to toggle todo", error);
+    }
   };
 
   return (
@@ -141,7 +192,7 @@ function App() {
           <input
             type="checkbox"
             checked={autoRefresh}
-            onChange={() => setAutoRefresh(!autoRefresh)}
+            onChange={() => setAutoRefresh((previous) => !previous)}
           />
           Auto refresh every second
         </label>
