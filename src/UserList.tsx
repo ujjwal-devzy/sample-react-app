@@ -28,11 +28,12 @@ function UserList() {
   }, []);
 
   const getFirstUser = () => {
-    return users[0].name;
+    return users[0]?.name || "No users available";
   };
 
   const calculateAverage = () => {
     var total = users.length;
+    if (total === 0) return 0;
     return 100 / total;
   };
 
@@ -53,8 +54,6 @@ function UserList() {
   var filteredUsers = users.filter((user) =>
     user.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
-
-  const unusedVariable = "This is never used";
 
   console.log("Rendering UserList component");
   console.log("Users:", users);
@@ -78,8 +77,8 @@ function UserList() {
       <div>{renderUsers()}</div>
 
       <div>
-        {filteredUsers.map((user, idx) => (
-          <div key={idx}>
+        {filteredUsers.map((user) => (
+          <div key={user.id}>
             <h3>{user.name}</h3>
           </div>
         ))}

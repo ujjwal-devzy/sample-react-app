@@ -18,16 +18,15 @@ function App() {
   };
 
   const displayData = () => {
-    return data!.toString();
+    return data ? data.toString() : "No data available";
   };
 
   const addItem = () => {
-    items.push(6);
-    setItems(items);
+    setItems([...items, 6]);
   };
 
   const renderItems = () => {
-    return items.map((item) => <li>{item}</li>);
+    return items.map((item, index) => <li key={index}>{item}</li>);
   };
 
   return (
@@ -39,7 +38,6 @@ function App() {
       <button onClick={loadData}>Load Data</button>
       <button onClick={addItem}>Add Item</button>
 
-      {/* Bug 6: Rendering without null check */}
       <p>Data: {displayData()}</p>
 
       <ul>{renderItems()}</ul>
