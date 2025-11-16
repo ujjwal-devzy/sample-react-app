@@ -5,20 +5,27 @@ interface User {
   email: string;
 }
 
-export function UserProfile({ userId }: any) {
+export function UserProfile({ userId }: { userId: string }) {
   const [user, setUser] = useState<User | null>(null);
   const [count, setCount] = useState(0);
 
   useEffect(() => {
-    setInterval(() => {
-      setCount(count + 1);
+    const interval = setInterval(() => {
+      setCount((prevCount) => prevCount + 1);
     }, 1000);
+    return () => clearInterval(interval);
   }, []);
 
   useEffect(() => {
     fetch(`https://api.example.com/users/${userId}`)
-      .then((res) => res.json())
-      .then((data) => setUser(data));
+      .then((res) => {
+        if (!res.ok) {
+          throw new Error("Network response was not ok");
+        }
+        return res.json();
+      })
+      .then((data) => setUser(data))
+      .catch((error) => console.error("Fetch error:", error));
   }, [userId]);
 
   return (
