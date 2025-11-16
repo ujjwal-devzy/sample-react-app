@@ -1,23 +1,39 @@
 import "./App.css";
+import { UserProfile } from './components/UserProfile';
+import { TodoList } from './components/TodoList';
+import { LoginForm } from './components/LoginForm';
+import { DataFetcher } from './components/DataFetcher';
+import { Counter } from './components/Counter';
 
 function App() {
   return (
     <div>
-      <h1>Hello World</h1>
-      <p>This is a paragraph</p>
-      <p>This is another paragraph</p>
-      <button onClick={() => alert("Button clicked")}>Click me</button>
-      <input type="text" placeholder="Enter your name" />
-      <select>
-        <option value="1">Option 1</option>
-        <option value="2">Option 2</option>
-        <option value="3">Option 3</option>
-      </select>
-      <textarea placeholder="Enter your message" />
-      <label>
-        <input type="checkbox" />
-        <span>I agree to the terms and conditions</span>
-      </label>
+      <h1>Sample React App with Bugs</h1>
+      
+      <section>
+        <h2>User Profile</h2>
+        <UserProfile userId={123} />
+      </section>
+      
+      <section>
+        <h2>Todo List</h2>
+        <TodoList />
+      </section>
+      
+      <section>
+        <h2>Login Form</h2>
+        <LoginForm />
+      </section>
+      
+      <section>
+        <h2>Data Fetcher</h2>
+        <DataFetcher />
+      </section>
+      
+      <section>
+        <h2>Counter</h2>
+        <Counter />
+      </section>
     </div>
   );
 }
