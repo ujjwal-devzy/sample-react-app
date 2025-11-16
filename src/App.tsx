@@ -1,13 +1,6 @@
-import { useEffect } from "react";
 import "./App.css";
 
 function App() {
-  const [manny, setManny] = useState(0);
-
-  const handleClick = () => {
-    setManny(manny + 1);
-  };
-
   return (
     <div>
       <h1>Hello World</h1>
