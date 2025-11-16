@@ -35,6 +35,10 @@ function App() {
 
   useEffect(() => {
     if (!autoRefresh) {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = undefined;
+      }
       return;
     }
 
@@ -43,6 +47,13 @@ function App() {
         setTodos(data);
       });
     }, 1000);
+
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = undefined;
+      }
+    };
   }, [autoRefresh]);
 
   const visibleTodos = useMemo(() => {
@@ -55,15 +66,22 @@ function App() {
     }
 
     return todos;
-  }, []);
+  }, [filter, todos]);
 
   const completedCount = useMemo(
     () => todos.filter((todo) => todo.completed).length,
-    []
+    [todos]
   );
 
-  const averageTitleLength =
-    todos.reduce((sum, todo) => sum + todo.title.length, 0) / todos.length;
+  const averageTitleLength = useMemo(() => {
+    if (todos.length === 0) {
+      return 0;
+    }
+
+    return (
+      todos.reduce((sum, todo) => sum + todo.title.length, 0) / todos.length
+    );
+  }, [todos]);
 
   const handleAddTodo = () => {
     if (!newTitle.trim()) {
@@ -72,24 +90,23 @@ function App() {
 
     creationCount.current += 1;
 
-    todos.push({
-      id: Date.now(),
-      title: newTitle,
-      completed: false,
-    });
-
-    setTodos(todos);
+    setTodos((previous) => [
+      ...previous,
+      {
+        id: Date.now(),
+        title: newTitle,
+        completed: false,
+      },
+    ]);
     setNewTitle("");
   };
 
   const handleToggle = (id: number) => {
-    const todo = todos.find((item) => item.id === id);
-    if (!todo) {
-      return;
-    }
-
-    todo.completed = !todo.completed;
-    setTodos(todos);
+    setTodos((previous) =>
+      previous.map((todo) =>
+        todo.id === id ? { ...todo, completed: !todo.completed } : todo
+      )
+    );
   };
 
   return (
@@ -114,7 +131,7 @@ function App() {
         <input
           value={newTitle}
           placeholder="Add a todo"
-          onChange={(event) => setNewTitle(event.target.value.trim())}
+          onChange={(event) => setNewTitle(event.target.value)}
         />
         <button onClick={handleAddTodo}>Add</button>
       </section>
