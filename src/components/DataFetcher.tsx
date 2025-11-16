@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
+import debounce from "lodash/debounce";
 
 interface DataItem {
   name: string;
@@ -9,13 +10,24 @@ export function DataFetcher() {
   const [data, setData] = useState<DataItem[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
 
-  useEffect(() => {
-    fetch(`https://api.example.com/search?q=${searchTerm}`)
+  const fetchData = (query: string) => {
+    fetch(`https://api.example.com/search?q=${query}`)
       .then((response) => response.json())
       .then((result) => {
         setData(result);
+      })
+      .catch((error) => {
+        console.error("Error fetching data:", error);
       });
-  });
+  };
+
+  const debouncedFetchData = useMemo(() => debounce(fetchData, 300), []);
+
+  useEffect(() => {
+    if (searchTerm) {
+      debouncedFetchData(searchTerm);
+    }
+  }, [searchTerm, debouncedFetchData]);
 
   const filteredData = data.filter((item) =>
     item.name.toLowerCase().includes(searchTerm.toLowerCase())
@@ -25,17 +37,14 @@ export function DataFetcher() {
     <div>
       <input
         value={searchTerm}
-        onChange={(e) => {
-          setSearchTerm(e.target.value);
-          fetch(`https://api.example.com/search?q=${e.target.value}`)
-            .then((res) => res.json())
-            .then(setData);
-        }}
+        onChange={(e) => setSearchTerm(e.target.value)}
       />
 
       <ul>
         {filteredData.map((item) => (
-          <li onClick={() => console.log(item)}>{item.name}</li>
+          <li key={item.id} onClick={() => console.log(item)}>
+            {item.name}
+          </li>
         ))}
       </ul>
     </div>
