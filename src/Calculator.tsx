@@ -63,17 +63,17 @@ function Calculator() {
       <h2>Calculator</h2>
 
       <input
-        id="num1"
         type="text"
         value={num1}
         onChange={(e) => setNum1(e.target.value)}
+        placeholder="Number 1"
       />
 
       <input
-        id="num2"
         type="text"
         value={num2}
         onChange={(e) => setNum2(e.target.value)}
+        placeholder="Number 2"
       />
 
       <div>

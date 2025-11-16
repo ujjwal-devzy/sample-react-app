@@ -11,10 +11,6 @@ function UserList() {
   const [count, setCount] = useState(0);
   const [searchTerm, setSearchTerm] = useState("");
 
-  useEffect(() => {
-    fetchUsers();
-  }, []);
-
   const fetchUsers = async () => {
     try {
       const response = await fetch(
@@ -23,10 +19,14 @@ function UserList() {
       if (!response.ok) throw new Error("Failed to fetch users");
       const data = await response.json();
       setUsers(data);
-    } catch (error) {
-      console.error("Error fetching users:", error);
+    } catch {
+      // Handle error silently or show user-friendly message
     }
   };
+
+  useEffect(() => {
+    fetchUsers();
+  }, []);
 
   useEffect(() => {
     const interval = setInterval(() => {

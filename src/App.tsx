@@ -13,8 +13,9 @@ function App() {
       if (!response.ok) throw new Error("Network response was not ok");
       const json = await response.json();
       setData(json);
-    } catch (error) {
-      console.error("Failed to load data:", error);
+    } catch {
+      // Handle error silently or show user-friendly message
+      setData(null);
     }
   };
 
