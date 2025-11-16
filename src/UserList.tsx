@@ -16,15 +16,24 @@ function UserList() {
   }, []);
 
   const fetchUsers = async () => {
-    const response = await fetch("https://jsonplaceholder.typicode.com/users");
-    const data = await response.json();
-    setUsers(data);
+    try {
+      const response = await fetch(
+        "https://jsonplaceholder.typicode.com/users"
+      );
+      if (!response.ok) throw new Error("Failed to fetch users");
+      const data = await response.json();
+      setUsers(data);
+    } catch (error) {
+      console.error("Error fetching users:", error);
+    }
   };
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setCount(count + 1);
+      setCount((prevCount) => prevCount + 1);
     }, 1000);
+
+    return () => clearInterval(interval);
   }, []);
 
   const getFirstUser = () => {
@@ -32,7 +41,7 @@ function UserList() {
   };
 
   const calculateAverage = () => {
-    var total = users.length;
+    const total = users.length;
     if (total === 0) return 0;
     return 100 / total;
   };
@@ -47,16 +56,12 @@ function UserList() {
   };
 
   const incrementCount = () => {
-    setCount(count + 1);
-    setCount(count + 1);
+    setCount((prevCount) => prevCount + 1);
   };
 
-  var filteredUsers = users.filter((user) =>
+  const filteredUsers = users.filter((user) =>
     user.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
-
-  console.log("Rendering UserList component");
-  console.log("Users:", users);
 
   return (
     <div>

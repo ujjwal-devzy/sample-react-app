@@ -1,20 +1,16 @@
 import "./App.css";
 import UserList from "./UserList";
 import Calculator from "./Calculator";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 
 function App() {
-  const [data, setData] = useState(null);
+  const [data, setData] = useState<unknown>(null);
   const [items, setItems] = useState([1, 2, 3, 4, 5]);
-
-  useEffect(() => {
-    console.log("Component mounted");
-  }, []);
 
   const loadData = async () => {
     try {
       const response = await fetch("https://api.example.com/data");
-      if (!response.ok) throw new Error('Network response was not ok');
+      if (!response.ok) throw new Error("Network response was not ok");
       const json = await response.json();
       setData(json);
     } catch (error) {
@@ -23,7 +19,7 @@ function App() {
   };
 
   const displayData = () => {
-    return data ? data.toString() : "No data available";
+    return data ? String(data) : "No data available";
   };
 
   const addItem = () => {
