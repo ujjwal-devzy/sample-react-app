@@ -15,7 +15,7 @@ export function UserProfile({ userId }: { userId: number }) {
 
   useEffect(() => {
     fetchUser();
-  }, []);
+  }, [userId]);
 
   const fetchUser = async () => {
     setLoading(true);
@@ -24,7 +24,9 @@ export function UserProfile({ userId }: { userId: number }) {
       const data = await response.json();
       setUser(data);
     } catch (err) {
-      setError(err.message);
+      setError(
+        err instanceof Error ? err.message : "An unknown error occurred"
+      );
     } finally {
       setLoading(false);
     }

@@ -52,7 +52,7 @@ export function TodoList() {
       completed: completedTodos.length,
       active: activeTodos.length,
     };
-  }, []);
+  }, [todos, completedTodos, activeTodos]);
 
   return (
     <div>
