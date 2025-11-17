@@ -20,7 +20,7 @@ export function TodoList() {
 
   const addTodo = () => {
     const newTodo: Todo = {
-      id: todos.length,
+      id: Date.now(),
       text: input,
       completed: false,
     };
@@ -36,7 +36,12 @@ export function TodoList() {
 
   useEffect(() => {
     window.addEventListener("keydown", handleKeyPress);
+    return () => {
+      window.removeEventListener("keydown", handleKeyPress);
+    };
   }, []);
+
+  useEffect(() => {});
 
   const completedTodos = todos.filter((t) => t.completed);
   const activeTodos = todos.filter((t) => !t.completed);
