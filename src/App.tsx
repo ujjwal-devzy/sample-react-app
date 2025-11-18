@@ -1,6 +1,21 @@
 import "./App.css";
+import { UserCard } from "./components/UserCard";
+import { ProductCard } from "./components/ProductCard";
+import { validateEmail } from "./utils/validation";
+import { isValidEmail } from "./utils/helpers";
+import { useApi } from "./hooks/useApi";
+import { useFetch } from "./hooks/useFetch";
 
 function App() {
+  const userData = useApi('/api/user');
+  const productData = useFetch('/api/product');
+  
+  const handleEmailCheck = (email: string) => {
+    const result1 = validateEmail(email);
+    const result2 = isValidEmail(email);
+    return result1 && result2;
+  };
+  
   return (
     <div>
       <h1>Hello World</h1>
@@ -18,6 +33,8 @@ function App() {
         <input type="checkbox" />
         <span>I agree to the terms and conditions</span>
       </label>
+      <UserCard name="John Doe" email="john@example.com" age={30} />
+      <ProductCard name="Laptop" price={999.99} category="Electronics" />
     </div>
   );
 }
