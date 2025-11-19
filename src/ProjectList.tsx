@@ -58,9 +58,9 @@ export function ProjectList({ projects }: ProjectListProps) {
       </div>
 
       <ul className="entity-list">
-        {projects.map((project, index) => (
+        {projects.map((project) => (
           // Same anti-pattern again: index as key
-          <li key={index} className="entity-row">
+          <li key={project.id} className="entity-row">
             <span className="entity-name">{project.name}</span>
             <span className="entity-meta">{project.status}</span>
           </li>

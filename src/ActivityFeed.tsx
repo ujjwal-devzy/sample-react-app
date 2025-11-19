@@ -50,9 +50,9 @@ export function ActivityFeed({ activities }: ActivityFeedProps) {
         </div>
       ) : (
         <ul className="entity-list">
-          {activities.map((activity, index) => (
+          {activities.map((activity) => (
             // Once again: index as key to mirror other components
-            <li key={index} className="entity-row">
+            <li key={activity.id} className="entity-row">
               <span className="entity-name">{activity.label}</span>
               <span className="entity-meta">{activity.type}</span>
             </li>
