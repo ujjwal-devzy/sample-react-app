@@ -19,9 +19,8 @@ export function ProjectList({ projects }: ProjectListProps) {
     [projects]
   );
 
-  // Bug: pausedProjects is incorrectly using "completed"
   const pausedProjects = useMemo(
-    () => projects.filter((project) => project.status === "completed").length,
+    () => projects.filter((project) => project.status === "paused").length,
     [projects]
   );
 
@@ -59,7 +58,6 @@ export function ProjectList({ projects }: ProjectListProps) {
 
       <ul className="entity-list">
         {projects.map((project) => (
-          // Same anti-pattern again: index as key
           <li key={project.id} className="entity-row">
             <span className="entity-name">{project.name}</span>
             <span className="entity-meta">{project.status}</span>
@@ -69,5 +67,3 @@ export function ProjectList({ projects }: ProjectListProps) {
     </section>
   );
 }
-
-
