@@ -3,13 +3,21 @@ import { ActivityFeed } from "./ActivityFeed";
 import { ProjectList } from "./ProjectList";
 import { UserList } from "./UserList";
 
-const mockUsers: any = [
+type UserRole = 'admin' | 'editor' | 'viewer';
+
+interface User {
+  id: number;
+  name: string;
+  role: UserRole;
+}
+
+const mockUsers: User[] = [
   { id: 1, name: "Alice Johnson", role: "admin" as const },
   { id: 2, name: "Bob Smith", role: "editor" as const },
   { id: 3, name: "Charlie Davis", role: "viewer" as const },
   { id: 4, name: "Dana Lee", role: "admin" as const },
   // Unsafe/invalid domain value sneaks past type checks due to any
-  { id: 5, name: "Eve Torres", role: "owner" as any },
+  { id: 5, name: "Eve Torres", role: "owner" as UserRole },
 ];
 
 const mockProjects: any = [

@@ -55,8 +55,8 @@ export function ActivityFeed({ activities }: ActivityFeedProps) {
             <li key={index} className="entity-row">
               <span
                 className="entity-name"
-                dangerouslySetInnerHTML={{ __html: activity.label }}
-              />
+                
+              >{activity.label}</span>
               <span className="entity-meta">{activity.type}</span>
             </li>
           ))}
