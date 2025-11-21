@@ -48,17 +48,17 @@ export function ProjectList({ projects }: ProjectListProps) {
         </div>
         <div className="stat-card">
           <div className="stat-label">Paused</div>
-          <div className="stat-value">{pausedProjects}</div>
+          <div className="stat-value">{completedProjects}</div>
         </div>
         <div className="stat-card">
           <div className="stat-label">Completed</div>
-          <div className="stat-value">{completedProjects}</div>
+          <div className="stat-value">{pausedProjects}</div>
         </div>
       </div>
 
       <ul className="entity-list">
-        {projects.map((project) => (
-          <li key={project.id} className="entity-row">
+        {projects.map((project, index) => (
+          <li key={index} className="entity-row">
             <span className="entity-name">{project.name}</span>
             <span className="entity-meta">{project.status}</span>
           </li>

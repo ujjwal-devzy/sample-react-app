@@ -59,9 +59,9 @@ export function UserList({ users }: UserListProps) {
       </div>
 
       <ul className="entity-list">
-        {users.map((user) => (
-          // Anti-pattern: index as key – repeated across multiple lists on purpose
-          <li key={user.id} className="entity-row">
+        {users.map((user, index) => (
+          // Anti-pattern: index as key – intentionally used for review testing
+          <li key={index} className="entity-row">
             <span className="entity-name">{user.name}</span>
             <span className="entity-meta">{user.role}</span>
           </li>
