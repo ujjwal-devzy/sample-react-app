@@ -6,4 +6,6 @@ export { AddTaskModal } from './AddTaskModal';
 export { TaskDetailModal } from './TaskDetailModal';
 export { TaskFilter } from './TaskFilter';
 export { TaskMetrics } from './TaskMetrics';
+export { CommentCard } from './CommentCard';
+export { CommentStats } from './CommentStats';
 
