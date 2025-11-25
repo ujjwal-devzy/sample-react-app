@@ -1,7 +1,3 @@
-/**
- * Comment Repository - Data access for task comments
- * NOTE: This follows similar pattern to taskRepository
- */
 
 import type { Comment, CreateCommentDTO, UpdateCommentDTO, CommentStatus } from '../types/comment';
 
@@ -11,7 +7,6 @@ const generateId = (): string => {
   return `comment_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 };
 
-// Seed data for demo
 const SEED_COMMENTS: Comment[] = [
   {
     id: 'comment_1',
@@ -39,8 +34,6 @@ const SEED_COMMENTS: Comment[] = [
   },
 ];
 
-// BUG: Missing date serialization - taskRepository has this but we forgot it here!
-// This will cause dates to become strings after localStorage round-trip
 const serializeComments = (comments: Comment[]): string => {
   return JSON.stringify(comments);
 };
@@ -75,7 +68,6 @@ class CommentRepository {
     return this.getStoredComments().find(c => c.id === id);
   }
 
-  // BUG: No input validation - author and content could be empty strings
   create(dto: CreateCommentDTO): Comment {
     const comments = this.getStoredComments();
     const now = new Date();
@@ -104,7 +96,6 @@ class CommentRepository {
 
     if (index === -1) return null;
 
-    // BUG: Not setting isEdited flag when content changes
     const updatedComment: Comment = {
       ...comments[index],
       ...dto,
@@ -126,7 +117,6 @@ class CommentRepository {
     return true;
   }
 
-  // BUG: This doesn't handle the case where comment is already archived
   archiveComment(id: string): Comment | null {
     return this.update(id, { status: 'archived' });
   }
@@ -143,7 +133,6 @@ class CommentRepository {
     if (reactionIndex === -1) {
       comment.reactions.push({ emoji, count: 1, users: [userId] });
     } else {
-      // BUG: Doesn't check if user already reacted - allows duplicate reactions
       comment.reactions[reactionIndex].count++;
       comment.reactions[reactionIndex].users.push(userId);
     }
@@ -153,14 +142,11 @@ class CommentRepository {
     return comment;
   }
 
-  // Get comment statistics for a task
   getTaskCommentStats(taskId: string) {
     const comments = this.findByTaskId(taskId);
     const activeComments = comments.filter(c => c.status === 'active');
     const resolvedComments = comments.filter(c => c.status === 'resolved');
 
-    // BUG: Division by zero if no comments exist (similar to TaskMetrics issue)
-    // useTasks.ts handles this correctly at line 40-42, but we forgot here
     const resolutionRate = (resolvedComments.length / comments.length) * 100;
 
     return {
@@ -168,7 +154,6 @@ class CommentRepository {
       active: activeComments.length,
       resolved: resolvedComments.length,
       resolutionRate,
-      // BUG: Accessing .getTime() on potentially deserialized string dates
       avgResponseTime: this.calculateAvgResponseTime(comments),
     };
   }
@@ -178,7 +163,6 @@ class CommentRepository {
 
     let totalTime = 0;
     for (let i = 1; i < comments.length; i++) {
-      // BUG: createdAt might be a string after deserialization, not a Date object
       const timeDiff = comments[i].createdAt.getTime() - comments[i - 1].createdAt.getTime();
       totalTime += timeDiff;
     }
