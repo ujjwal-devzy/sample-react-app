@@ -4,6 +4,7 @@
  */
 
 import type { Task, TaskStatus, TaskPriority } from '../types';
+import { useAnalytics } from '../../analytics';
 
 interface TaskCardProps {
   task: Task;
@@ -22,6 +23,8 @@ const priorityConfig: Record<TaskPriority, { label: string; className: string }>
 const statusFlow: TaskStatus[] = ['backlog', 'in_progress', 'review', 'done'];
 
 export function TaskCard({ task, onMove, onDelete, onSelect }: TaskCardProps) {
+  const { trackAction, trackEvent } = useAnalytics();
+  
   const currentIndex = statusFlow.indexOf(task.status);
   const canMoveLeft = currentIndex > 0;
   const canMoveRight = currentIndex < statusFlow.length - 1;
@@ -29,26 +32,75 @@ export function TaskCard({ task, onMove, onDelete, onSelect }: TaskCardProps) {
   const handleMoveLeft = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (canMoveLeft) {
-      onMove(task.id, statusFlow[currentIndex - 1]);
+      const newStatus = statusFlow[currentIndex - 1];
+      onMove(task.id, newStatus);
+      
+      // Track task movement
+      trackEvent({
+        eventName: 'task_moved',
+        properties: {
+          taskId: task.id,
+          fromStatus: task.status,
+          toStatus: newStatus,
+          direction: 'left',
+          priority: task.priority,
+        },
+      });
     }
   };
 
   const handleMoveRight = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (canMoveRight) {
-      onMove(task.id, statusFlow[currentIndex + 1]);
+      const newStatus = statusFlow[currentIndex + 1];
+      onMove(task.id, newStatus);
+      
+      // Track task movement
+      trackEvent({
+        eventName: 'task_moved',
+        properties: {
+          taskId: task.id,
+          fromStatus: task.status,
+          toStatus: newStatus,
+          direction: 'right',
+          priority: task.priority,
+        },
+      });
     }
   };
 
   const handleDelete = (e: React.MouseEvent) => {
     e.stopPropagation();
+    
+    trackAction('task_deleted', undefined, true);
+    trackEvent({
+      eventName: 'task_deleted',
+      properties: {
+        taskId: task.id,
+        taskTitle: task.title,
+        status: task.status,
+        priority: task.priority,
+      },
+    });
+    
     onDelete(task.id);
+  };
+
+  const handleSelect = () => {
+    onSelect(task);
+    trackEvent({
+      eventName: 'task_viewed',
+      properties: {
+        taskId: task.id,
+        status: task.status,
+      },
+    });
   };
 
   return (
     <article 
       className="task-card"
-      onClick={() => onSelect(task)}
+      onClick={handleSelect}
       tabIndex={0}
       role="button"
       aria-label={`Task: ${task.title}`}
@@ -118,4 +170,3 @@ export function TaskCard({ task, onMove, onDelete, onSelect }: TaskCardProps) {
     </article>
   );
 }
-
