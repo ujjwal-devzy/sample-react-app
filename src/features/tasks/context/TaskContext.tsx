@@ -6,6 +6,8 @@
 import { createContext, useContext, useReducer, useCallback, type ReactNode } from 'react';
 import type { Task, CreateTaskDTO, UpdateTaskDTO, TaskStatus } from '../types';
 import { taskRepository } from '../repository/taskRepository';
+import { trackTaskCreated, trackTaskCompleted, trackTaskDeleted } from '../../../backend/services/analyticsService';
+import { calculateTaskAge } from '../../../shared/utils/taskUtils';
 
 // State shape
 interface TaskState {
@@ -98,6 +100,7 @@ export function TaskProvider({ children }: { children: ReactNode }) {
   const createTask = useCallback((dto: CreateTaskDTO): Task => {
     const newTask = taskRepository.create(dto);
     dispatch({ type: 'ADD_TASK', payload: newTask });
+    trackTaskCreated(newTask.id, newTask.priority);
     return newTask;
   }, []);
 
@@ -112,13 +115,19 @@ export function TaskProvider({ children }: { children: ReactNode }) {
     const success = taskRepository.delete(id);
     if (success) {
       dispatch({ type: 'DELETE_TASK', payload: id });
+      trackTaskDeleted(id);
     }
   }, []);
 
   const moveTask = useCallback((taskId: string, newStatus: TaskStatus) => {
+    const existingTask = taskRepository.findById(taskId);
     const updated = taskRepository.moveTask(taskId, newStatus);
     if (updated) {
       dispatch({ type: 'UPDATE_TASK', payload: updated });
+      if (newStatus === 'done' && existingTask) {
+        const durationDays = calculateTaskAge(existingTask.createdAt);
+        trackTaskCompleted(taskId, durationDays);
+      }
     }
   }, []);
 

@@ -5,6 +5,7 @@
  */
 
 import type { Task, CreateTaskDTO, UpdateTaskDTO, TaskStatus } from '../types';
+import { formatDate, validateTask, TaskValidationError } from '../../../shared/utils/taskUtils';
 
 const STORAGE_KEY = 'kanban_tasks';
 
@@ -82,7 +83,6 @@ const SEED_TASKS: Task[] = [
   },
 ];
 
-// Serialize/deserialize helpers for dates
 const serializeTasks = (tasks: Task[]): string => {
   return JSON.stringify(tasks, (key, value) => {
     if (key === 'createdAt' || key === 'updatedAt') {
@@ -132,8 +132,9 @@ class TaskRepository {
     return this.getStoredTasks().filter(task => task.status === status);
   }
 
-  // Write operations
   create(dto: CreateTaskDTO): Task {
+    validateTask({ title: dto.title });
+    
     const tasks = this.getStoredTasks();
     const now = new Date();
     
@@ -152,6 +153,10 @@ class TaskRepository {
     tasks.push(newTask);
     this.saveTasks(tasks);
     return newTask;
+  }
+
+  getFormattedDate(task: Task): string {
+    return formatDate(task.updatedAt);
   }
 
   update(id: string, dto: UpdateTaskDTO): Task | null {
