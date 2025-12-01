@@ -14,7 +14,8 @@ export function useTasks() {
   // Load tasks on mount
   useEffect(() => {
     actions.loadTasks();
-  }, [actions]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Organize tasks into columns - memoized for performance
   const columns: TaskColumn[] = useMemo(() => {
