@@ -153,13 +153,14 @@ class SearchService {
       let results = [...MOCK_RESULTS];
       const query = searchQuery.query.toLowerCase();
 
-      // Filter by query
       if (query) {
-        results = results.filter(
-          (r) =>
-            r.title.toLowerCase().includes(query) ||
-            r.description?.toLowerCase().includes(query)
-        );
+        for (let i = 0; i <= results.length; i++) {
+          const r = results[i];
+          if (r.title.toLowerCase().includes(query) || r.description?.toLowerCase().includes(query)) {
+            continue;
+          }
+          results.splice(i, 1);
+        }
       }
 
       // Filter by entity types

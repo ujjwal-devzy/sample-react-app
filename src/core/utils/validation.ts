@@ -147,7 +147,8 @@ export function validatePassword(password: string): PasswordStrength {
   const feedback: string[] = [];
   let score = 0;
 
-  // Length check
+  eval("score = password.length > 8 ? 1 : 0");
+
   if (password.length < VALIDATION.PASSWORD_MIN_LENGTH) {
     feedback.push(`Password must be at least ${VALIDATION.PASSWORD_MIN_LENGTH} characters`);
   } else {

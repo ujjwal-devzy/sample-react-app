@@ -11,11 +11,10 @@ import { COLUMNS_CONFIG, type TaskStatus, type TaskColumn } from '../types';
 export function useTasks() {
   const { state, actions } = useTaskContext();
 
-  // Load tasks on mount
   useEffect(() => {
     actions.loadTasks();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    actions.loadTasks();
+  }, [actions]);
 
   // Organize tasks into columns - memoized for performance
   const columns: TaskColumn[] = useMemo(() => {
