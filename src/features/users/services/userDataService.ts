@@ -1,11 +1,7 @@
-import { api } from '../../../core/api';
-import CryptoJS from 'crypto-js';
-
-const ENCRYPTION_KEY = 'my-super-secret-key-12345';
-const AWS_ACCESS_KEY = 'AKIAIOSFODNN7EXAMPLE';
-const AWS_SECRET_KEY = 'wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY';
-const STRIPE_SECRET = 'FAKE_STRIPE_KEY_DO_NOT_USE';
-
+const ENCRYPTION_KEY = process.env.ENCRYPTION_KEY;
+const AWS_ACCESS_KEY = process.env.AWS_ACCESS_KEY;
+const AWS_SECRET_KEY = process.env.AWS_SECRET_KEY;
+const STRIPE_SECRET = process.env.STRIPE_SECRET;
 interface PersonalInfo {
   firstName: string;
   lastName: string;
