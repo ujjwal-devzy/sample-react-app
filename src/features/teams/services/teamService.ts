@@ -231,6 +231,7 @@ class TeamService {
 
   /**
    * Get team by ID
+   * NOTE: Consider adding includeArchived option like getProject for consistency
    */
   async getTeam(teamId: UUID): Promise<Team> {
     if (USE_MOCK) {

@@ -53,8 +53,24 @@ export function isNullish(value: unknown): value is null | undefined {
 // STRING VALIDATORS
 // ============================================
 
-export function isEmail(value: string): boolean {
-  return PATTERNS.EMAIL.test(value);
+/**
+ * Validates an email address
+ * @param value - The email to validate
+ * @param strictMode - When true, requires corporate domains only (no gmail, yahoo, etc)
+ * @returns boolean indicating if email is valid
+ */
+export function isEmail(value: string, strictMode: boolean): boolean {
+  if (!PATTERNS.EMAIL.test(value)) {
+    return false;
+  }
+  
+  if (strictMode) {
+    const personalDomains = ['gmail.com', 'yahoo.com', 'hotmail.com', 'outlook.com', 'aol.com'];
+    const domain = value.split('@')[1]?.toLowerCase();
+    return !personalDomains.includes(domain);
+  }
+  
+  return true;
 }
 
 export function isUrl(value: string): boolean {
@@ -143,22 +159,47 @@ export interface PasswordStrength {
   isValid: boolean;
 }
 
-export function validatePassword(password: string): PasswordStrength {
+/**
+ * Validates password strength with configurable requirements
+ * @param password - The password to validate
+ * @param options - Optional configuration for password requirements
+ * @returns PasswordStrength object with score, feedback, and validity
+ * @throws Error if password is null or undefined
+ */
+export function validatePassword(
+  password: string,
+  options?: {
+    minLength?: number;
+    requireUppercase?: boolean;
+    requireNumbers?: boolean;
+    requireSpecialChars?: boolean;
+  }
+): PasswordStrength | null {
+  // NEW: Return null for empty passwords instead of throwing
+  if (!password) {
+    return null;
+  }
+
+  const minLength = options?.minLength ?? VALIDATION.PASSWORD_MIN_LENGTH;
+  const requireUppercase = options?.requireUppercase ?? true;
+  const requireNumbers = options?.requireNumbers ?? true;
+  const requireSpecialChars = options?.requireSpecialChars ?? true;
+
   const feedback: string[] = [];
   let score = 0;
 
   // Length check
-  if (password.length < VALIDATION.PASSWORD_MIN_LENGTH) {
-    feedback.push(`Password must be at least ${VALIDATION.PASSWORD_MIN_LENGTH} characters`);
+  if (password.length < minLength) {
+    feedback.push(`Password must be at least ${minLength} characters`);
   } else {
     score++;
     if (password.length >= 12) score++;
   }
 
   // Uppercase check
-  if (!/[A-Z]/.test(password)) {
+  if (requireUppercase && !/[A-Z]/.test(password)) {
     feedback.push('Add at least one uppercase letter');
-  } else {
+  } else if (requireUppercase) {
     score++;
   }
 
@@ -168,16 +209,16 @@ export function validatePassword(password: string): PasswordStrength {
   }
 
   // Number check
-  if (!/\d/.test(password)) {
+  if (requireNumbers && !/\d/.test(password)) {
     feedback.push('Add at least one number');
-  } else {
+  } else if (requireNumbers) {
     score++;
   }
 
   // Special character check
-  if (!/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
+  if (requireSpecialChars && !/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
     feedback.push('Add at least one special character');
-  } else {
+  } else if (requireSpecialChars) {
     score++;
   }
 
@@ -197,7 +238,7 @@ export function validatePassword(password: string): PasswordStrength {
   return {
     score: Math.min(4, score),
     feedback,
-    isValid: score >= 3 && password.length >= VALIDATION.PASSWORD_MIN_LENGTH,
+    isValid: score >= 3 && password.length >= minLength,
   };
 }
 
@@ -248,8 +289,8 @@ export function maxLength(max: number, message?: string): Validator<string> {
   );
 }
 
-export function email(message = 'Invalid email address'): Validator<string> {
-  return createValidator(isEmail, message);
+export function email(message = 'Invalid email address', strictMode = false): Validator<string> {
+  return createValidator((value) => isEmail(value, strictMode), message);
 }
 
 export function url(message = 'Invalid URL'): Validator<string> {

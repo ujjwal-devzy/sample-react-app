@@ -124,8 +124,19 @@ class TaskRepository {
     return this.getStoredTasks();
   }
 
-  findById(id: string): Task | undefined {
-    return this.getStoredTasks().find(task => task.id === id);
+  /**
+   * Find task by ID with optional validation
+   * @param id - Task ID to find
+   * @param validate - If true, throws error when not found (breaking change!)
+   */
+  findById(id: string, validate: boolean = false): Task | undefined {
+    const task = this.getStoredTasks().find(task => task.id === id);
+    
+    if (validate && !task) {
+      throw new Error(`Task not found: ${id}`);
+    }
+    
+    return task;
   }
 
   findByStatus(status: TaskStatus): Task[] {
@@ -154,7 +165,13 @@ class TaskRepository {
     return newTask;
   }
 
-  update(id: string, dto: UpdateTaskDTO): Task | null {
+  /**
+   * Update a task
+   * @param id - Task ID
+   * @param dto - Update data
+   * @param notifySubscribers - Whether to notify task subscribers (new required param!)
+   */
+  update(id: string, dto: UpdateTaskDTO, notifySubscribers: boolean): Task | null {
     const tasks = this.getStoredTasks();
     const index = tasks.findIndex(task => task.id === id);
     
@@ -168,6 +185,12 @@ class TaskRepository {
 
     tasks[index] = updatedTask;
     this.saveTasks(tasks);
+    
+    // New notification logic
+    if (notifySubscribers && updatedTask.assignee) {
+      console.log(`[TaskRepository] Notifying ${updatedTask.assignee} of task update`);
+    }
+    
     return updatedTask;
   }
 

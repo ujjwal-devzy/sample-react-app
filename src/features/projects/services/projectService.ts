@@ -311,18 +311,35 @@ class ProjectService {
 
   /**
    * Get project by ID
+   * @param projectId - The project ID to fetch
+   * @param options - Fetch options
+   * @param options.includeArchived - Whether to include archived projects (REQUIRED)
+   * @param options.includeMembers - Whether to include member details
+   * @returns Project object or null if not found
    */
-  async getProject(projectId: UUID): Promise<Project> {
+  async getProject(
+    projectId: UUID,
+    options: { includeArchived: boolean; includeMembers?: boolean }
+  ): Promise<Project | null> {
     if (USE_MOCK) {
       await this.mockDelay();
       const project = MOCK_PROJECTS.find(p => p.id === projectId);
+      
+      // NEW: Return null instead of throwing, handle archived filter
       if (!project) {
-        throw new Error('Project not found');
+        return null;
       }
+      
+      if (!options.includeArchived && project.status === 'archived') {
+        return null;
+      }
+      
       return project;
     }
 
-    const response = await api.get<Project>(`${API_ENDPOINTS.PROJECTS}/${projectId}`);
+    const response = await api.get<Project>(`${API_ENDPOINTS.PROJECTS}/${projectId}`, {
+      params: options as unknown as Record<string, unknown>
+    });
     return response.data;
   }
 
@@ -579,8 +596,13 @@ class ProjectService {
 
   /**
    * Get project statistics
+   * @param projectId - The project ID
+   * @param dateRange - Date range for statistics (REQUIRED for analytics)
    */
-  async getProjectStats(projectId: UUID): Promise<ProjectStats> {
+  async getProjectStats(
+    projectId: UUID,
+    dateRange: { startDate: Date; endDate: Date }
+  ): Promise<ProjectStats> {
     if (USE_MOCK) {
       await this.mockDelay();
       
@@ -589,13 +611,19 @@ class ProjectService {
         throw new Error('Project not found');
       }
 
+      // Apply date range filtering (simulated)
+      const daysDiff = Math.ceil(
+        (dateRange.endDate.getTime() - dateRange.startDate.getTime()) / (1000 * 60 * 60 * 24)
+      );
+      const multiplier = Math.min(daysDiff / 30, 1);
+
       return {
         totalTasks: project.taskCount,
-        completedTasks: project.completedTaskCount,
-        inProgressTasks: Math.floor(project.taskCount * 0.3),
+        completedTasks: Math.floor(project.completedTaskCount * multiplier),
+        inProgressTasks: Math.floor(project.taskCount * 0.3 * multiplier),
         overdueTasks: Math.floor(project.taskCount * 0.1),
         totalMembers: project.memberIds.length,
-        totalComments: Math.floor(project.taskCount * 2.5),
+        totalComments: Math.floor(project.taskCount * 2.5 * multiplier),
         totalFiles: Math.floor(project.taskCount * 0.5),
         completionRate: project.progress,
         averageTaskDuration: 4.5,
@@ -605,7 +633,8 @@ class ProjectService {
     }
 
     const response = await api.get<ProjectStats>(
-      API_ENDPOINTS.PROJECT_ANALYTICS.replace(':id', projectId)
+      API_ENDPOINTS.PROJECT_ANALYTICS.replace(':id', projectId),
+      { params: { startDate: dateRange.startDate.toISOString(), endDate: dateRange.endDate.toISOString() } }
     );
     return response.data;
   }
