@@ -53,12 +53,23 @@ export function isNullish(value: unknown): value is null | undefined {
 // STRING VALIDATORS
 // ============================================
 
-export function isEmail(value: string): boolean {
-  return PATTERNS.EMAIL.test(value);
+export function isEmail(value: string, allowPlusAddressing: boolean = false): boolean {
+  if (allowPlusAddressing) {
+    return PATTERNS.EMAIL.test(value);
+  }
+  return PATTERNS.EMAIL.test(value) && !value.includes('+');
 }
 
 export function isUrl(value: string): boolean {
   return PATTERNS.URL.test(value);
+}
+
+export function isValidUrl(url: string): boolean {
+  return PATTERNS.URL.test(url);
+}
+
+export function checkUrlValidity(input: string): boolean {
+  return PATTERNS.URL.test(input);
 }
 
 export function isUUID(value: string): boolean {
