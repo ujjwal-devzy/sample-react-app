@@ -7,6 +7,7 @@ import { useState, Suspense, lazy } from 'react';
 import { TaskBoard, TaskProvider } from './features/tasks';
 import { AuthProvider, useAuth } from './features/auth';
 import { ProjectProvider } from './features/projects';
+import { SettingsProvider, useSettings } from './features/settings';
 import { ToastProvider } from './shared/components/Toast';
 import { GlobalSearch, SearchTrigger } from './features/search';
 import { Spinner } from './shared/components/Loading';
@@ -374,6 +375,66 @@ function LoadingFallback() {
 // ============================================
 
 function SettingsPage() {
+  const { preferences, isLoading, error, setTheme, updateNotificationPreferences } = useSettings();
+
+  const themeMode = preferences?.theme.mode ?? 'system';
+  const reducedMotion = preferences?.theme.reducedMotion ?? false;
+  const emailEnabled = preferences?.notifications.email.enabled ?? true;
+  const pushEnabled = preferences?.notifications.push.enabled ?? true;
+  const desktopEnabled = preferences?.notifications.desktop.enabled ?? true;
+
+  const handleThemeModeChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    if (!preferences) return;
+    const mode = event.target.value as typeof preferences.theme.mode;
+    setTheme({ ...preferences.theme, mode });
+  };
+
+  const handleReducedMotionChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (!preferences) return;
+    setTheme({ ...preferences.theme, reducedMotion: event.target.checked });
+  };
+
+  const handleEmailToggle = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (!preferences) return;
+    await updateNotificationPreferences({
+      email: { ...preferences.notifications.email, enabled: event.target.checked },
+    });
+  };
+
+  const handlePushToggle = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (!preferences) return;
+    await updateNotificationPreferences({
+      push: { ...preferences.notifications.push, enabled: event.target.checked },
+    });
+  };
+
+  const handleDesktopToggle = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (!preferences) return;
+    await updateNotificationPreferences({
+      desktop: { ...preferences.notifications.desktop, enabled: event.target.checked },
+    });
+  };
+
+  if (isLoading && !preferences) {
+    return (
+      <div className="settings-page">
+        <div className="settings-section">
+          <p>Loading preferences...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error && !preferences) {
+    return (
+      <div className="settings-page">
+        <div className="settings-section">
+          <p className="settings-error">{error}</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="settings-page">
       <div className="settings-section">
@@ -396,7 +457,11 @@ function SettingsPage() {
         <div className="settings-card">
           <div className="settings-field">
             <label>Theme</label>
-            <select className="input">
+            <select
+              className="input"
+              value={themeMode}
+              onChange={handleThemeModeChange}
+            >
               <option value="system">System</option>
               <option value="light">Light</option>
               <option value="dark">Dark</option>
@@ -404,7 +469,11 @@ function SettingsPage() {
           </div>
           <div className="settings-field">
             <label>
-              <input type="checkbox" defaultChecked />
+              <input
+                type="checkbox"
+                checked={reducedMotion}
+                onChange={handleReducedMotionChange}
+              />
               <span>Reduce motion</span>
             </label>
           </div>
@@ -416,19 +485,31 @@ function SettingsPage() {
         <div className="settings-card">
           <div className="settings-field">
             <label>
-              <input type="checkbox" defaultChecked />
+              <input
+                type="checkbox"
+                checked={emailEnabled}
+                onChange={handleEmailToggle}
+              />
               <span>Email notifications</span>
             </label>
           </div>
           <div className="settings-field">
             <label>
-              <input type="checkbox" defaultChecked />
+              <input
+                type="checkbox"
+                checked={pushEnabled}
+                onChange={handlePushToggle}
+              />
               <span>Push notifications</span>
             </label>
           </div>
           <div className="settings-field">
             <label>
-              <input type="checkbox" />
+              <input
+                type="checkbox"
+                checked={desktopEnabled}
+                onChange={handleDesktopToggle}
+              />
               <span>Desktop notifications</span>
             </label>
           </div>
@@ -487,9 +568,11 @@ function App() {
   return (
     <ToastProvider>
       <AuthProvider>
-        <ProjectProvider>
-          <AppLayout />
-        </ProjectProvider>
+        <SettingsProvider>
+          <ProjectProvider>
+            <AppLayout />
+          </ProjectProvider>
+        </SettingsProvider>
       </AuthProvider>
     </ToastProvider>
   );
