@@ -12,6 +12,7 @@ import { Badge } from '../../../shared/components/Badge';
 import { ProgressBar, ProgressRing } from '../../../shared/components/Progress';
 import { SkeletonCard } from '../../../shared/components/Loading';
 import { formatNumber } from '../../../core/utils/format';
+import { WorkspaceInsights } from '../../workspace';
 
 export function AnalyticsDashboard() {
   const [metrics, setMetrics] = useState<DashboardMetrics | null>(null);
@@ -95,6 +96,8 @@ export function AnalyticsDashboard() {
           ))}
         </div>
       </div>
+
+      <WorkspaceInsights />
 
       {/* Key Metrics */}
       <div className="metrics-grid">

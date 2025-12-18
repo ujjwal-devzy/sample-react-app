@@ -309,11 +309,7 @@ function MainContent({ currentView }: MainContentProps) {
   const renderContent = () => {
     switch (currentView) {
       case 'tasks':
-  return (
-    <TaskProvider>
-      <TaskBoard />
-    </TaskProvider>
-        );
+        return <TaskBoard />;
       case 'projects':
         return (
           <Suspense fallback={<LoadingFallback />}>
@@ -488,7 +484,9 @@ function App() {
     <ToastProvider>
       <AuthProvider>
         <ProjectProvider>
-          <AppLayout />
+          <TaskProvider>
+            <AppLayout />
+          </TaskProvider>
         </ProjectProvider>
       </AuthProvider>
     </ToastProvider>
