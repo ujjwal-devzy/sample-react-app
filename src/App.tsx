@@ -8,6 +8,7 @@ import { TaskBoard, TaskProvider } from './features/tasks';
 import { AuthProvider, useAuth } from './features/auth';
 import { ProjectProvider } from './features/projects';
 import { ToastProvider } from './shared/components/Toast';
+import { ErrorBoundary } from './shared/components/ErrorBoundary';
 import { GlobalSearch, SearchTrigger } from './features/search';
 import { Spinner } from './shared/components/Loading';
 import { Avatar } from './shared/components/Avatar';
@@ -485,13 +486,15 @@ function AppLayout() {
 
 function App() {
   return (
-    <ToastProvider>
-      <AuthProvider>
-        <ProjectProvider>
-          <AppLayout />
-        </ProjectProvider>
-      </AuthProvider>
-    </ToastProvider>
+    <ErrorBoundary>
+      <ToastProvider>
+        <AuthProvider>
+          <ProjectProvider>
+            <AppLayout />
+          </ProjectProvider>
+        </AuthProvider>
+      </ToastProvider>
+    </ErrorBoundary>
   );
 }
 
