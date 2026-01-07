@@ -1,9 +1,10 @@
-/**
- * Main Application Component
- * Enterprise-grade task management application
- */
-
 import { useState, Suspense, lazy } from 'react';
+import { Routes, Route, Navigate, useLocation, useNavigate, useParams } from 'react-router-dom';
+import type { UserRole } from './core/types';
+import { ROUTES, STORAGE_KEYS } from './core/constants';
+import { getFromStorage, setInStorage } from './core/utils/storage';
+import type { AppView } from './routing/appViewMapping';
+import { getPathForView, getViewFromPath } from './routing/appViewMapping';
 import { TaskBoard, TaskProvider } from './features/tasks';
 import { AuthProvider, useAuth } from './features/auth';
 import { ProjectProvider } from './features/projects';
@@ -14,17 +15,47 @@ import { Avatar } from './shared/components/Avatar';
 import { CountBadge } from './shared/components/Badge';
 import { Dropdown, DropdownItem, DropdownDivider, DropdownLabel } from './shared/components/Dropdown';
 import { Button } from './shared/components/Button';
+import { LoginPage } from './features/auth/components/LoginPage';
+import { RegisterPage } from './features/auth/components/RegisterPage';
+import { ForgotPasswordPage } from './features/auth/components/ForgotPasswordPage';
 
-// Lazy load heavy components
-const ProjectDashboard = lazy(() => import('./features/projects/components/ProjectDashboard').then(m => ({ default: m.ProjectDashboard })));
-const TeamList = lazy(() => import('./features/teams/components/TeamList').then(m => ({ default: m.TeamList })));
-const AnalyticsDashboard = lazy(() => import('./features/analytics/components/AnalyticsDashboard').then(m => ({ default: m.AnalyticsDashboard })));
+const ProjectDashboard = lazy(() => import('./features/projects/components/ProjectDashboard').then((m) => ({ default: m.ProjectDashboard })));
+const TeamList = lazy(() => import('./features/teams/components/TeamList').then((m) => ({ default: m.TeamList })));
+const AnalyticsDashboard = lazy(() => import('./features/analytics/components/AnalyticsDashboard').then((m) => ({ default: m.AnalyticsDashboard })));
 
-// ============================================
-// NAVIGATION
-// ============================================
+interface AuthGateProps {
+  children: JSX.Element;
+  requiredRole?: UserRole | UserRole[];
+  requiredPermission?: string;
+}
 
-type AppView = 'tasks' | 'projects' | 'teams' | 'analytics' | 'settings';
+function AuthGate({ children, requiredRole, requiredPermission }: AuthGateProps) {
+  const { isAuthenticated, isLoading, hasRole, hasPermission } = useAuth();
+  const location = useLocation();
+
+  if (isLoading) {
+    return (
+      <div className="auth-loading">
+        <Spinner size="lg" />
+        <span>Checking authentication...</span>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return <Navigate to={ROUTES.LOGIN} replace state={{ from: location }} />;
+  }
+
+  if (requiredRole && !hasRole(requiredRole)) {
+    return <Navigate to={ROUTES.FORBIDDEN} replace />;
+  }
+
+  if (requiredPermission && !hasPermission(requiredPermission)) {
+    return <Navigate to={ROUTES.FORBIDDEN} replace />;
+  }
+
+  return children;
+}
 
 interface NavItemProps {
   icon: React.ReactNode;
@@ -306,18 +337,21 @@ interface MainContentProps {
 }
 
 function MainContent({ currentView }: MainContentProps) {
+  const params = useParams<{ projectId?: string }>();
+  const projectIdFromParams = params.projectId || 'proj_001';
+
   const renderContent = () => {
     switch (currentView) {
       case 'tasks':
-  return (
-    <TaskProvider>
-      <TaskBoard />
-    </TaskProvider>
+        return (
+          <TaskProvider>
+            <TaskBoard />
+          </TaskProvider>
         );
       case 'projects':
         return (
           <Suspense fallback={<LoadingFallback />}>
-            <ProjectDashboard projectId="proj_001" />
+            <ProjectDashboard projectId={projectIdFromParams} />
           </Suspense>
         );
       case 'teams':
@@ -451,17 +485,37 @@ function SettingsPage() {
 // ============================================
 
 function AppLayout() {
-  const [currentView, setCurrentView] = useState<AppView>('tasks');
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const location = useLocation();
+  const navigate = useNavigate();
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
+    const stored = getFromStorage<boolean>(STORAGE_KEYS.SIDEBAR_COLLAPSED);
+    return stored ?? false;
+  });
   const [searchOpen, setSearchOpen] = useState(false);
+  const currentView = getViewFromPath(location.pathname);
+
+  const handleViewChange = (view: AppView) => {
+    const targetPath = getPathForView(view);
+    if (location.pathname !== targetPath) {
+      navigate(targetPath);
+    }
+  };
+
+  const handleToggleCollapse = () => {
+    setSidebarCollapsed((prev) => {
+      const next = !prev;
+      setInStorage(STORAGE_KEYS.SIDEBAR_COLLAPSED, next);
+      return next;
+    });
+  };
 
   return (
     <div className={`app-layout ${sidebarCollapsed ? 'sidebar-collapsed' : ''}`}>
       <Sidebar
         currentView={currentView}
-        onViewChange={setCurrentView}
+        onViewChange={handleViewChange}
         collapsed={sidebarCollapsed}
-        onToggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
+        onToggleCollapse={handleToggleCollapse}
       />
       <div className="app-main">
         <Header onOpenSearch={() => setSearchOpen(true)} />
@@ -471,7 +525,7 @@ function AppLayout() {
         isOpen={searchOpen}
         onClose={() => setSearchOpen(false)}
         onNavigate={(url) => {
-          console.log('Navigate to:', url);
+          navigate(url);
           setSearchOpen(false);
         }}
       />
@@ -479,16 +533,140 @@ function AppLayout() {
   );
 }
 
-// ============================================
-// APP WITH PROVIDERS
-// ============================================
+function ForbiddenPage() {
+  const navigate = useNavigate();
+
+  return (
+    <div className="page-container">
+      <div className="page-header">
+        <h1 className="page-title">Access denied</h1>
+        <p className="page-subtitle">You do not have permission to view this page.</p>
+      </div>
+      <Button variant="secondary" onClick={() => navigate(ROUTES.TASKS)}>
+        Go back to tasks
+      </Button>
+    </div>
+  );
+}
+
+function NotFoundPage() {
+  const navigate = useNavigate();
+
+  return (
+    <div className="page-container">
+      <div className="page-header">
+        <h1 className="page-title">Page not found</h1>
+        <p className="page-subtitle">The page you are looking for does not exist.</p>
+      </div>
+      <Button variant="secondary" onClick={() => navigate(ROUTES.TASKS)}>
+        Go back home
+      </Button>
+    </div>
+  );
+}
+
+function AppRoutes() {
+  const { isAuthenticated } = useAuth();
+
+  return (
+    <Routes>
+      <Route
+        path={ROUTES.HOME}
+        element={<Navigate to={isAuthenticated ? ROUTES.TASKS : ROUTES.LOGIN} replace />}
+      />
+      <Route
+        path={ROUTES.LOGIN}
+        element={isAuthenticated ? <Navigate to={ROUTES.TASKS} replace /> : <LoginPage />}
+      />
+      <Route
+        path={ROUTES.REGISTER}
+        element={isAuthenticated ? <Navigate to={ROUTES.TASKS} replace /> : <RegisterPage />}
+      />
+      <Route
+        path={ROUTES.FORGOT_PASSWORD}
+        element={isAuthenticated ? <Navigate to={ROUTES.TASKS} replace /> : <ForgotPasswordPage />}
+      />
+      <Route
+        path={ROUTES.DASHBOARD}
+        element={<Navigate to={ROUTES.TASKS} replace />}
+      />
+      <Route
+        path={ROUTES.MY_TASKS}
+        element={(
+          <AuthGate>
+            <AppLayout />
+          </AuthGate>
+        )}
+      />
+      <Route
+        path={ROUTES.TASKS}
+        element={(
+          <AuthGate>
+            <AppLayout />
+          </AuthGate>
+        )}
+      />
+      <Route
+        path={ROUTES.TASK_DETAIL}
+        element={(
+          <AuthGate>
+            <AppLayout />
+          </AuthGate>
+        )}
+      />
+      <Route
+        path={ROUTES.PROJECTS}
+        element={(
+          <AuthGate>
+            <AppLayout />
+          </AuthGate>
+        )}
+      />
+      <Route
+        path={ROUTES.PROJECT_DETAIL}
+        element={(
+          <AuthGate>
+            <AppLayout />
+          </AuthGate>
+        )}
+      />
+      <Route
+        path={ROUTES.TEAMS}
+        element={(
+          <AuthGate>
+            <AppLayout />
+          </AuthGate>
+        )}
+      />
+      <Route
+        path={ROUTES.ANALYTICS}
+        element={(
+          <AuthGate>
+            <AppLayout />
+          </AuthGate>
+        )}
+      />
+      <Route
+        path={ROUTES.SETTINGS}
+        element={(
+          <AuthGate>
+            <AppLayout />
+          </AuthGate>
+        )}
+      />
+      <Route path={ROUTES.FORBIDDEN} element={<ForbiddenPage />} />
+      <Route path={ROUTES.NOT_FOUND} element={<NotFoundPage />} />
+      <Route path="*" element={<NotFoundPage />} />
+    </Routes>
+  );
+}
 
 function App() {
   return (
     <ToastProvider>
       <AuthProvider>
         <ProjectProvider>
-          <AppLayout />
+          <AppRoutes />
         </ProjectProvider>
       </AuthProvider>
     </ToastProvider>
