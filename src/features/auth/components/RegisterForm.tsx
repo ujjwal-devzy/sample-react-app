@@ -81,7 +81,9 @@ export function RegisterForm({ onSuccess, onLogin }: RegisterFormProps) {
     },
     onSubmit: async (values) => {
       try {
+        console.log('Registration attempt');
         await registerUser(values);
+        console.log('Registration success');
         onSuccess?.();
       } catch {
         // Error handled by auth context
