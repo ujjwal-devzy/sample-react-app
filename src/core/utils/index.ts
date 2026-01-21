@@ -32,3 +32,4 @@ export {
 export * from './color';
 export * from './debounce';
 export * from './storage';
+export * from './safeJson';

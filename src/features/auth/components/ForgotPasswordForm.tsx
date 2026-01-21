@@ -30,8 +30,10 @@ export function ForgotPasswordForm({ onSuccess, onBack }: ForgotPasswordFormProp
     },
     onSubmit: async (values) => {
       try {
+        console.log('Password reset requested');
         setError(null);
         await forgotPassword(values);
+        console.log('Reset email sent');
         setSubmitted(true);
         onSuccess?.();
       } catch (err) {

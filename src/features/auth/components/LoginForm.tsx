@@ -37,7 +37,9 @@ export function LoginForm({ onSuccess, onForgotPassword, onRegister }: LoginForm
     },
     onSubmit: async (values) => {
       try {
+        console.log('Login attempt');
         await login(values);
+        console.log('Login success');
         onSuccess?.();
       } catch {
         // Error is handled by auth context
