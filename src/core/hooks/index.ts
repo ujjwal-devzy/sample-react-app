@@ -34,3 +34,4 @@ export { useInterval, useTimeout, useCountdown, useTimer, usePolling } from './u
 export { useToggle } from './useToggle';
 export { useDisclosure, useDisclosures, useModal, useConfirmDialog } from './useDisclosure';
 export type { UseDisclosureReturn, UseDisclosureOptions } from './useDisclosure';
+export { useThrottle, useIdleCallback, useIntersectionObserver } from './usePerformance';

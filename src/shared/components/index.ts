@@ -19,3 +19,4 @@ export { ProgressBar, ProgressRing } from './Progress';
 export { Pagination } from './Pagination';
 export { SearchInput } from './SearchInput';
 export { ConfirmDialog } from './ConfirmDialog';
+export { ErrorBoundary } from './ErrorBoundary';

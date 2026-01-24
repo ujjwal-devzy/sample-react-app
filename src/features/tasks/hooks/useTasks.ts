@@ -6,18 +6,22 @@
 
 import { useEffect, useMemo } from 'react';
 import { useTaskContext } from '../context/TaskContext';
-import { COLUMNS_CONFIG, type TaskStatus, type TaskColumn } from '../types';
+import { COLUMNS_CONFIG, type TaskStatus, type TaskColumn, type TaskPriority } from '../types';
+
+const priorityOrder: Record<TaskPriority, number> = {
+  critical: 4,
+  high: 3,
+  medium: 2,
+  low: 1,
+};
 
 export function useTasks() {
   const { state, actions } = useTaskContext();
 
-  // Load tasks on mount
   useEffect(() => {
     actions.loadTasks();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [actions]);
 
-  // Organize tasks into columns - memoized for performance
   const columns: TaskColumn[] = useMemo(() => {
     const statusOrder: TaskStatus[] = ['backlog', 'in_progress', 'review', 'done'];
     
@@ -27,7 +31,11 @@ export function useTasks() {
       color: COLUMNS_CONFIG[status].color,
       tasks: state.tasks
         .filter(task => task.status === status)
-        .sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime()),
+        .sort((a, b) => {
+          const priorityDiff = priorityOrder[b.priority] - priorityOrder[a.priority];
+          if (priorityDiff !== 0) return priorityDiff;
+          return b.updatedAt.getTime() - a.updatedAt.getTime();
+        }),
     }));
   }, [state.tasks]);
 
@@ -50,6 +58,7 @@ export function useTasks() {
     isLoading: state.isLoading,
     error: state.error,
     selectedTask: state.selectedTask,
+    clearError: actions.clearError,
     ...actions,
   };
 }

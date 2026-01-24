@@ -172,12 +172,18 @@ class HttpClient {
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), timeout);
 
-        const response = await fetch(fullUrl, {
-          ...fetchConfig,
-          headers,
-          body,
-          signal: controller.signal,
-        });
+        let response: Response;
+        try {
+          response = await fetch(fullUrl, {
+            ...fetchConfig,
+            headers,
+            body,
+            signal: controller.signal,
+          });
+        } catch (fetchError) {
+          clearTimeout(timeoutId);
+          throw fetchError;
+        }
 
         clearTimeout(timeoutId);
 
@@ -314,6 +320,13 @@ class HttpClient {
         return {
           code: ERROR_CODES.TIMEOUT_ERROR,
           message: 'Request timed out',
+        };
+      }
+
+      if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
+        return {
+          code: ERROR_CODES.NETWORK_ERROR,
+          message: 'Network connection failed. Please check your internet connection.',
         };
       }
 

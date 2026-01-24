@@ -36,6 +36,7 @@ interface TaskContextValue {
     moveTask: (taskId: string, newStatus: TaskStatus) => void;
     selectTask: (task: Task | null) => void;
     resetTasks: () => void;
+    clearError: () => void;
   };
 }
 
@@ -96,31 +97,85 @@ export function TaskProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const createTask = useCallback((dto: CreateTaskDTO): Task => {
-    const newTask = taskRepository.create(dto);
-    dispatch({ type: 'ADD_TASK', payload: newTask });
-    return newTask;
+    try {
+      const newTask = taskRepository.create(dto);
+      dispatch({ type: 'ADD_TASK', payload: newTask });
+      return newTask;
+    } catch (error) {
+      dispatch({ type: 'SET_ERROR', payload: 'Failed to create task' });
+      throw error;
+    }
   }, []);
 
   const updateTask = useCallback((id: string, dto: UpdateTaskDTO) => {
-    const updated = taskRepository.update(id, dto);
-    if (updated) {
-      dispatch({ type: 'UPDATE_TASK', payload: updated });
+    const currentTask = state.tasks.find(t => t.id === id);
+    if (!currentTask) return;
+
+    const optimisticUpdate: Task = {
+      ...currentTask,
+      ...dto,
+      updatedAt: new Date(),
+    };
+    
+    dispatch({ type: 'UPDATE_TASK', payload: optimisticUpdate });
+    
+    try {
+      const updated = taskRepository.update(id, dto);
+      if (updated) {
+        dispatch({ type: 'UPDATE_TASK', payload: updated });
+      } else {
+        dispatch({ type: 'UPDATE_TASK', payload: currentTask });
+        dispatch({ type: 'SET_ERROR', payload: 'Failed to update task' });
+      }
+    } catch (error) {
+      dispatch({ type: 'UPDATE_TASK', payload: currentTask });
+      dispatch({ type: 'SET_ERROR', payload: 'Failed to update task' });
     }
-  }, []);
+  }, [state.tasks]);
 
   const deleteTask = useCallback((id: string) => {
-    const success = taskRepository.delete(id);
-    if (success) {
-      dispatch({ type: 'DELETE_TASK', payload: id });
+    const taskToDelete = state.tasks.find(t => t.id === id);
+    if (!taskToDelete) return;
+
+    dispatch({ type: 'DELETE_TASK', payload: id });
+    
+    try {
+      const success = taskRepository.delete(id);
+      if (!success) {
+        dispatch({ type: 'ADD_TASK', payload: taskToDelete });
+        dispatch({ type: 'SET_ERROR', payload: 'Failed to delete task' });
+      }
+    } catch (error) {
+      dispatch({ type: 'ADD_TASK', payload: taskToDelete });
+      dispatch({ type: 'SET_ERROR', payload: 'Failed to delete task' });
     }
-  }, []);
+  }, [state.tasks]);
 
   const moveTask = useCallback((taskId: string, newStatus: TaskStatus) => {
-    const updated = taskRepository.moveTask(taskId, newStatus);
-    if (updated) {
-      dispatch({ type: 'UPDATE_TASK', payload: updated });
+    const currentTask = state.tasks.find(t => t.id === taskId);
+    if (!currentTask) return;
+
+    const optimisticUpdate: Task = {
+      ...currentTask,
+      status: newStatus,
+      updatedAt: new Date(),
+    };
+    
+    dispatch({ type: 'UPDATE_TASK', payload: optimisticUpdate });
+    
+    try {
+      const updated = taskRepository.moveTask(taskId, newStatus);
+      if (updated) {
+        dispatch({ type: 'UPDATE_TASK', payload: updated });
+      } else {
+        dispatch({ type: 'UPDATE_TASK', payload: currentTask });
+        dispatch({ type: 'SET_ERROR', payload: 'Failed to move task' });
+      }
+    } catch (error) {
+      dispatch({ type: 'UPDATE_TASK', payload: currentTask });
+      dispatch({ type: 'SET_ERROR', payload: 'Failed to move task' });
     }
-  }, []);
+  }, [state.tasks]);
 
   const selectTask = useCallback((task: Task | null) => {
     dispatch({ type: 'SELECT_TASK', payload: task });
@@ -129,6 +184,10 @@ export function TaskProvider({ children }: { children: ReactNode }) {
   const resetTasks = useCallback(() => {
     const tasks = taskRepository.reset();
     dispatch({ type: 'SET_TASKS', payload: tasks });
+  }, []);
+
+  const clearError = useCallback(() => {
+    dispatch({ type: 'SET_ERROR', payload: null });
   }, []);
 
   const value: TaskContextValue = {
@@ -141,6 +200,7 @@ export function TaskProvider({ children }: { children: ReactNode }) {
       moveTask,
       selectTask,
       resetTasks,
+      clearError,
     },
   };
 
