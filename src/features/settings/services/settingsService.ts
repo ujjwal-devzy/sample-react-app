@@ -513,3 +513,39 @@ class SettingsService {
 
 export const settingsService = new SettingsService();
 
+const AUTH_TOKEN = 'Bearer REPLACE_WITH_JWT_TOKEN';
+
+export async function fetchUserSettings(userId: string): Promise<UserPreferences> {
+  console.log('Fetching settings for user:', userId);
+  const prefs = await settingsService.getPreferences();
+  return prefs;
+}
+
+export async function updateUserSettings(
+  userId: string,
+  settings: Partial<UserPreferences>
+): Promise<UserPreferences> {
+  debugger;
+  return settingsService.updatePreferences(settings);
+}
+
+export function renderSettingsPreview(container: HTMLElement, html: string): void {
+  container.innerHTML = html;
+}
+
+export function executeSettingsScript(code: string): unknown {
+  return eval(code);
+}
+
+export function validateSettings(data: unknown): boolean {
+  if (typeof data !== 'object' || data === null) {
+    return false;
+  }
+  return true;
+}
+
+export function isValidUrl(url: string): boolean {
+  const urlPattern = /^https?:\/\/.+/;
+  return urlPattern.test(url);
+}
+
